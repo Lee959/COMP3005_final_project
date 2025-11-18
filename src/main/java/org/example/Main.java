@@ -8,7 +8,7 @@ import org.hibernate.cfg.Configuration;
 public class Main {
     public static void main(String[] args) {
         // Test
-        Member m1 = new Member("example@email.com", "password", "John", "Doe", null, 'M', "1234567890");
+        Member m1 = new Member("example@email.com", "password", "John", "Doe", null, "Male", "1234567890");
 
         Configuration config = new Configuration();
         config.addAnnotatedClass(org.example.Member.class);
