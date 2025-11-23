@@ -12,5 +12,24 @@
 
         <property name="hibernate.hbm2ddl.auto">update</property>
         <property name="hibernate.show_sql">true</property>
+
+        <!-- Use second-level cache -->
+        <property name="hibernate.cache.use_second_level_cache">false</property>
+
+        <!-- Current Session Context -->
+        <property name="hibernate.current_session_context_class">thread</property>
+
+        <!-- Disable contextual LOB creation (for PostgreSQL) -->
+        <property name="hibernate.jdbc.lob.non_contextual_creation">true</property>
+
+        <!-- Entity Mappings -->
+        <mapping class="org.example.entity.Room"/>
+        <mapping class="org.example.entity.Member"/>
+        <mapping class="org.example.entity.Trainer"/>
+        <mapping class="org.example.entity.FitnessGoal"/>
+        <mapping class="org.example.entity.HealthMetric"/>
+        <mapping class="org.example.entity.PersonalTrainingSession"/>
+
+
     </session-factory>
 </hibernate-configuration>
