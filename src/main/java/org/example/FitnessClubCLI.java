@@ -30,12 +30,12 @@ public class FitnessClubCLI {
                 case 1:
                     memberMenu();
                     break;
-//                case 2:
-//                    trainerMenu();
-//                    break;
-//                case 3:
-//                    adminMenu();
-//                    break;
+                case 2:
+                    trainerMenu();
+                    break;
+                case 3:
+                    adminMenu();
+                    break;
                 case 0:
                     running = false;
                     System.out.println("\nThank you for using Fitness Club Management System!");
@@ -59,7 +59,8 @@ public class FitnessClubCLI {
         System.out.println("0. Exit");
         System.out.println("=".repeat(50));
     }
-
+    
+    //Menu for Member function
     private static void memberMenu() {
         boolean back = false;
         while (!back) {
@@ -107,6 +108,61 @@ public class FitnessClubCLI {
             }
         }
     }
+    
+    //Menu for Trainer functions
+    private static void trainerMenu() {
+        while (true) {
+            System.out.println("\n--- Trainer Menu ---");
+            System.out.println("1. Set Availability");
+            System.out.println("2. View Schedule");
+            System.out.println("3. Member Lookup");
+            System.out.println("0. Back");
+
+            int choice = getIntInput("Choose an option: ");
+
+            switch (choice) {
+                case 1:
+                    setTrainerAvailability();
+                    break;
+                case 2:
+                    viewTrainerSchedule();
+                    break;
+                case 3:
+                    lookupMember();
+                    break;
+                case 0:
+                    return;
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    //Menu for Admin
+    private static void adminMenu() {
+        while (true) {
+            System.out.println("\n--- Admin Menu ---");
+            System.out.println("1. Equipment Maintenance");
+            System.out.println("2. Class Management");
+            System.out.println("0. Back");
+
+            int choice = getIntInput("Choose an option: ");
+
+            switch (choice) {
+                case 1:
+                    manageEquipmentMaintenance();
+                    break;
+                case 2:
+                    manageClasses();
+                    break;
+                case 0:
+                    return;
+                default:
+                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
 
     //1.
     private static void registerMember() {
@@ -286,6 +342,7 @@ public class FitnessClubCLI {
         }
     }
 
+    // 5. Dashboard
     private static void viewMemberDashboard() {
         System.out.println("\n📈 MEMBER DASHBOARD");
         System.out.println("-".repeat(50));
@@ -371,9 +428,9 @@ public class FitnessClubCLI {
                 for (PersonalTrainingSession trainingSession : sessions) {
                     System.out.println("• " + trainingSession.getSessionDate() +
                             " at " + trainingSession.getStartTime()
-//                            + " - Trainer: " + trainingSession.getTrainer().getFirstName() + " " +
-//                            trainingSession.getTrainer().getLastName() +
-//                            " (Room: " + trainingSession.getRoom().getRoomName() + ")"
+                            + " - Trainer: " + trainingSession.getTrainer().getFirstName() + " " +
+                            trainingSession.getTrainer().getLastName()
+//                          + " (Room: " + trainingSession.getRoom().getRoomName() + ")"
                     );
                 }
             } else {
@@ -426,6 +483,592 @@ public class FitnessClubCLI {
             System.out.println("Error: " + e.getMessage());
         }
     }
+
+    //********************* FOLLOWING TRAINER FUNCTIONS ***********************
+    // 7. Look up trainer member
+    private static void lookupMember() {
+        System.out.println("\nMEMBER LOOKUP (Trainer)");
+        System.out.println("-".repeat(50));
+
+        String search = getStringInput("Enter part of member's first or last name: ").toLowerCase();
+        if (search.isEmpty()) {
+            System.out.println("Search text cannot be empty.");
+            return;
+        }
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+
+            // 1) Find members whose first_name or last_name matches (case-insensitive)
+            Query<Member> memberQuery = session.createQuery(
+                    "FROM Member m " +
+                            "WHERE lower(m.first_name) LIKE :q " +
+                            "   OR lower(m.last_name)  LIKE :q",
+                    Member.class
+            );
+            memberQuery.setParameter("q", "%" + search + "%");
+
+            List<Member> members = memberQuery.getResultList();
+
+            if (members.isEmpty()) {
+                System.out.println("No members found with that name.");
+                return;
+            }
+
+            System.out.println("\nFound " + members.size() + " member(s):\n");
+
+            for (Member member : members) {
+                System.out.println("--------------------------------------------------");
+                System.out.println("Member ID: " + member.getMember_id());
+                System.out.println("Name     : " + member.getFirst_name() + " " + member.getLast_name());
+                System.out.println("Email    : " + member.getEmail());
+
+                // 2) Latest FitnessGoal for this member (current goal)
+                Query<FitnessGoal> goalQuery = session.createQuery(
+                        "FROM FitnessGoal fg " +
+                                "WHERE fg.member = :member " +
+                                "ORDER BY fg.createdDate DESC",
+                        FitnessGoal.class
+                );
+                goalQuery.setParameter("member", member);
+                goalQuery.setMaxResults(1);
+                List<FitnessGoal> goals = goalQuery.getResultList();
+
+                if (!goals.isEmpty()) {
+                    FitnessGoal goal = goals.get(0);
+                    System.out.println("\nCurrent Goal:");
+                    System.out.println("  Type   : " + goal.getGoal_type());
+                    System.out.println("  Target : " + goal.getTargetValue());
+                    System.out.println("  Target Date: " + goal.getTargetDate());
+                } else {
+                    System.out.println("\nCurrent Goal: none set.");
+                }
+
+                // 3) Latest HealthMetric (last metric)
+                Query<HealthMetric> metricQuery = session.createQuery(
+                        "FROM HealthMetric hm " +
+                                "WHERE hm.member = :member " +
+                                "ORDER BY hm.recordedDate DESC",
+                        HealthMetric.class
+                );
+                metricQuery.setParameter("member", member);
+                metricQuery.setMaxResults(1);
+                List<HealthMetric> metrics = metricQuery.getResultList();
+
+                if (!metrics.isEmpty()) {
+                    HealthMetric latest = metrics.get(0);
+                    System.out.println("\nLast Recorded Metric:");
+                    System.out.println("  Date      : " + latest.getRecordedDate());
+                    System.out.println("  Weight    : " +
+                            (latest.getWeight() != null ? latest.getWeight() + " kg" : "N/A"));
+                    System.out.println("  HeartRate : " +
+                            (latest.getHeartRate() != null ? latest.getHeartRate() + " bpm" : "N/A"));
+                    System.out.println("  Body Fat% : " +
+                            (latest.getBodyFatPercentage() != null ? latest.getBodyFatPercentage() + "%" : "N/A"));
+                } else {
+                    System.out.println("\nLast Recorded Metric: none recorded.");
+                }
+            }
+
+            System.out.println("--------------------------------------------------");
+        }
+        catch (Exception e) {
+            System.out.println("Error during member lookup: " + e.getMessage());
+        }
+    }
+
+    //8. See the schedule of the trainer
+    private static void viewTrainerSchedule() {
+        System.out.println("\nTRAINER SCHEDULE VIEW");
+        System.out.println("-".repeat(50));
+
+        long trainerId = getLongInput("Enter Trainer ID: ");
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+
+            Trainer trainer = session.find(Trainer.class, trainerId);
+            if (trainer == null) {
+                System.out.println("No trainer found with ID " + trainerId);
+                return;
+            }
+
+            System.out.println("\nSchedule for Trainer: " + trainerId);
+            System.out.println("--------------------------------------------------");
+
+            // 1) Personal Training Sessions
+            Query<PersonalTrainingSession> ptsQuery = session.createQuery(
+                    "FROM PersonalTrainingSession pts " +
+                            "WHERE pts.trainer = :trainer " +
+                            "ORDER BY pts.sessionDate, pts.startTime",
+                    PersonalTrainingSession.class
+            );
+            ptsQuery.setParameter("trainer", trainer);
+            List<PersonalTrainingSession> ptsList = ptsQuery.getResultList();
+
+            if (ptsList.isEmpty()) {
+                System.out.println("No personal training sessions assigned.");
+            } else {
+                System.out.println("Personal Training Sessions:");
+                for (PersonalTrainingSession pts : ptsList) {
+                    System.out.println("  " + pts);
+                }
+            }
+
+            System.out.println("--------------------------------------------------");
+
+            // 2) Group Classes
+            Query<GroupClass> classQuery = session.createQuery(
+                    "FROM GroupClass gc " +
+                            "WHERE gc.trainer = :trainer " +
+                            "ORDER BY gc.classDate, gc.startTime",
+                    GroupClass.class
+            );
+            classQuery.setParameter("trainer", trainer);
+            List<GroupClass> classList = classQuery.getResultList();
+
+            if (classList.isEmpty()) {
+                System.out.println("No group classes assigned.");
+            } else {
+                System.out.println("Group Classes:");
+                for (GroupClass gc : classList) {
+                    System.out.println("  " + gc);
+                }
+            }
+
+            System.out.println("--------------------------------------------------");
+
+        }
+        catch (Exception e) {
+            System.out.println("Error while viewing trainer schedule: " + e.getMessage());
+        }
+    }
+
+    //9. Set the trainer availability
+    private static void setTrainerAvailability() {
+        System.out.println("\nSET TRAINER AVAILABILITY");
+        System.out.println("-".repeat(50));
+
+        long trainerId = getLongInput("Enter Trainer ID: ");
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+
+            Trainer trainer = session.find(Trainer.class, trainerId);
+            if (trainer == null) {
+                System.out.println("No trainer found with ID " + trainerId);
+                return;
+            }
+
+            String dateStr = getStringInput("Enter availability date (YYYY-MM-DD): ");
+            String startStr = getStringInput("Enter start time (HH:MM, 24h): ");
+            String endStr   = getStringInput("Enter end time   (HH:MM, 24h): ");
+
+            LocalDate date;
+            LocalTime startTime;
+            LocalTime endTime;
+
+            try {
+                date = LocalDate.parse(dateStr);
+                startTime = LocalTime.parse(startStr);
+                endTime = LocalTime.parse(endStr);
+            } catch (Exception e) {
+                System.out.println("Invalid date or time format. Please use YYYY-MM-DD and HH:MM.");
+                return;
+            }
+
+            if (!endTime.isAfter(startTime)) {
+                System.out.println("End time must be AFTER start time.");
+                return;
+            }
+
+            // Check for overlap with existing availability
+            Query<Long> overlapQuery = session.createQuery(
+                    "SELECT COUNT(ta) " +
+                            "FROM TrainerAvailability ta " +
+                            "WHERE ta.trainer = :trainer " +
+                            "  AND ta.date = :date " +
+                            "  AND ta.startTime < :newEnd " +
+                            "  AND ta.endTime   > :newStart",
+                    Long.class
+            );
+            overlapQuery.setParameter("trainer", trainer);
+            overlapQuery.setParameter("date", date);
+            overlapQuery.setParameter("newEnd", endTime);
+            overlapQuery.setParameter("newStart", startTime);
+
+            Long overlaps = overlapQuery.uniqueResult();
+            if (overlaps != null && overlaps > 0) {
+                System.out.println("Cannot add availability: time window overlaps with an existing one.");
+                return;
+            }
+
+            // No overlap → save new availability
+            Transaction tx = session.beginTransaction();
+            try {
+                TrainerAvailability availability =
+                        new TrainerAvailability(trainer, date, startTime, endTime);
+                session.persist(availability);
+                tx.commit();
+                System.out.println("Availability added successfully.");
+            }
+            catch (Exception e) {
+                tx.rollback();
+                System.out.println("Error saving availability: " + e.getMessage());
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error setting trainer availability: " + e.getMessage());
+        }
+    }
+
+    //********************* FOLLOWING ADMIN FUNCTIONS ******************
+
+    //10. Manage class acts like a menu to perform task such as create, list and update
+    private static void manageClasses() {
+        while (true) {
+            System.out.println("\n--- CLASS MANAGEMENT (Admin) ---");
+            System.out.println("1. Create New Class");
+            System.out.println("2. List All Classes");
+            System.out.println("3. Update Existing Class");
+            System.out.println("0. Back");
+
+            int choice = getIntInput("Choose an option: ");
+
+            switch (choice) {
+                case 1 -> createGroupClass();
+                case 2 -> listGroupClasses();
+                case 3 -> updateGroupClass();
+                case 0 -> { return; }
+                default -> System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    //******* USED IN MANAGECLASS *************
+    private static void createGroupClass() {
+        System.out.println("\nCREATE NEW GROUP CLASS");
+        System.out.println("-".repeat(50));
+
+        String name = getStringInput("Class name: ");
+        String description = getStringInput("Description (optional): ");
+
+        long trainerId = getLongInput("Trainer ID: ");
+        long roomId    = getLongInput("Room ID: ");
+
+        String dateStr  = getStringInput("Class date (YYYY-MM-DD): ");
+        String startStr = getStringInput("Start time (HH:MM, 24h): ");
+        String endStr   = getStringInput("End time (HH:MM, 24h): ");
+
+        int capacity    = getIntInput("Capacity: ");
+
+        LocalDate date;
+        LocalTime startTime;
+        LocalTime endTime;
+
+        try {
+            date = LocalDate.parse(dateStr);
+            startTime = LocalTime.parse(startStr);
+            endTime = LocalTime.parse(endStr);
+        } catch (Exception e) {
+            System.out.println("Invalid date/time format.");
+            return;
+        }
+
+        if (!endTime.isAfter(startTime)) {
+            System.out.println("End time must be after start time.");
+            return;
+        }
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Trainer trainer = session.find(Trainer.class, trainerId);
+            Room room       = session.find(Room.class, roomId);
+
+            if (trainer == null) {
+                System.out.println("Trainer not found.");
+                return;
+            }
+            if (room == null) {
+                System.out.println("Room not found.");
+                return;
+            }
+
+            Transaction tx = session.beginTransaction();
+            try {
+                GroupClass groupClass = new GroupClass(
+                        name,
+                        description,
+                        trainer,
+                        room,
+                        date,
+                        startTime,
+                        endTime,
+                        capacity
+                );
+                session.persist(groupClass);
+                tx.commit();
+                System.out.println("Group class created with ID: " + groupClass.getClassId());
+            } catch (Exception e) {
+                tx.rollback();
+                System.out.println("Error creating class: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void listGroupClasses() {
+        System.out.println("\nLIST OF GROUP CLASSES");
+        System.out.println("-".repeat(50));
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<GroupClass> query = session.createQuery(
+                    "FROM GroupClass gc ORDER BY gc.classDate, gc.startTime",
+                    GroupClass.class
+            );
+            List<GroupClass> classes = query.getResultList();
+
+            if (classes.isEmpty()) {
+                System.out.println("No classes found.");
+                return;
+            }
+
+            for (GroupClass gc : classes) {
+                System.out.println(gc);   // relies on nice toString()
+            }
+        }
+    }
+
+    private static void updateGroupClass() {
+        System.out.println("\nUPDATE GROUP CLASS");
+        System.out.println("-".repeat(50));
+
+        long classId = getLongInput("Enter class ID to update: ");
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+
+            GroupClass gc = session.find(GroupClass.class, classId);
+            if (gc == null) {
+                System.out.println("Class not found.");
+                return;
+            }
+
+            System.out.println("Current class info:");
+            System.out.println(gc);
+
+            System.out.println("\nWhat would you like to update?");
+            System.out.println("1. Trainer");
+            System.out.println("2. Room");
+            System.out.println("3. Date/Time");
+            System.out.println("4. Capacity");
+            int choice = getIntInput("Choice: ");
+
+            Transaction tx = session.beginTransaction();
+            try {
+                switch (choice) {
+                    case 1 -> {
+                        long newTrainerId = getLongInput("New trainer ID: ");
+                        Trainer newTrainer = session.find(Trainer.class, newTrainerId);
+                        if (newTrainer == null) {
+                            System.out.println("Trainer not found.");
+                            tx.rollback();
+                            return;
+                        }
+                        gc.setTrainer(newTrainer);
+                    }
+                    case 2 -> {
+                        long newRoomId = getLongInput("New room ID: ");
+                        Room newRoom = session.find(Room.class, newRoomId);
+                        if (newRoom == null) {
+                            System.out.println("Room not found.");
+                            tx.rollback();
+                            return;
+                        }
+                        gc.setRoom(newRoom);
+                    }
+                    case 3 -> {
+                        String dateStr  = getStringInput("New date (YYYY-MM-DD): ");
+                        String startStr = getStringInput("New start time (HH:MM): ");
+                        String endStr   = getStringInput("New end time (HH:MM): ");
+                        try {
+                            LocalDate newDate = LocalDate.parse(dateStr);
+                            LocalTime newStart = LocalTime.parse(startStr);
+                            LocalTime newEnd   = LocalTime.parse(endStr);
+                            if (!newEnd.isAfter(newStart)) {
+                                System.out.println("End time must be after start time.");
+                                tx.rollback();
+                                return;
+                            }
+                            gc.setClassDate(newDate);
+                            gc.setStartTime(newStart);
+                            gc.setEndTime(newEnd);
+                        } catch (Exception e) {
+                            System.out.println("Invalid date/time format.");
+                            tx.rollback();
+                            return;
+                        }
+                    }
+                    case 4 -> {
+                        int newCap = getIntInput("New capacity: ");
+                        gc.setCapacity(newCap);
+                    }
+                    default -> {
+                        System.out.println("Invalid choice.");
+                        tx.rollback();
+                        return;
+                    }
+                }
+                session.merge(gc);
+                tx.commit();
+                System.out.println("Class updated successfully.");
+            } catch (Exception e) {
+                tx.rollback();
+                System.out.println("Error updating class: " + e.getMessage());
+            }
+        }
+    }
+
+    // 11. Manages the Equimentment, acts like a menu
+    private static void manageEquipmentMaintenance() {
+        while (true) {
+            System.out.println("\n--- EQUIPMENT MAINTENANCE (Admin) ---");
+            System.out.println("1. Add Equipment");
+            System.out.println("2. Open Maintenance Ticket");
+            System.out.println("3. Resolve Maintenance Ticket");
+            System.out.println("4. List Open Tickets");
+            System.out.println("0. Back");
+
+            int choice = getIntInput("Choose an option: ");
+
+            switch (choice) {
+                case 1 -> addEquipment();
+                case 2 -> openMaintenanceTicket();
+                case 3 -> resolveMaintenanceTicket();
+                case 4 -> listOpenTickets();
+                case 0 -> { return; }
+                default -> System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    //******* USED IN MANAGE Equiment Mantainance *************
+    private static void addEquipment() {
+        System.out.println("\nADD EQUIPMENT");
+        System.out.println("-".repeat(50));
+
+        String name = getStringInput("Equipment name: ");
+        long roomId = getLongInput("Room ID (0 if not assigned): ");
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Room room = null;
+            if (roomId != 0) {
+                room = session.find(Room.class, roomId);
+                if (room == null) {
+                    System.out.println("Room not found; equipment will not be linked to a room.");
+                }
+            }
+
+            Transaction tx = session.beginTransaction();
+            try {
+                Equipment equipment = new Equipment(name, room, "OK");
+                session.persist(equipment);
+                tx.commit();
+                System.out.println("Equipment added with ID: " + equipment.getEquipmentId());
+            } catch (Exception e) {
+                tx.rollback();
+                System.out.println("Error adding equipment: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void openMaintenanceTicket() {
+        System.out.println("\nOPEN MAINTENANCE TICKET");
+        System.out.println("-".repeat(50));
+
+        long equipmentId = getLongInput("Equipment ID: ");
+        String desc = getStringInput("Issue description: ");
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Equipment equipment = session.find(Equipment.class, equipmentId);
+            if (equipment == null) {
+                System.out.println("Equipment not found.");
+                return;
+            }
+
+            Transaction tx = session.beginTransaction();
+            try {
+                MaintenanceTicket ticket = new MaintenanceTicket(equipment, desc);
+                session.persist(ticket);
+                // optional: also mark equipment as OutOfOrder
+                equipment.setStatus("OUT_OF_ORDER");
+                session.merge(equipment);
+
+                tx.commit();
+                System.out.println("Ticket opened with ID: " + ticket.getTicketId());
+            } catch (Exception e) {
+                tx.rollback();
+                System.out.println("Error opening ticket: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void resolveMaintenanceTicket() {
+        System.out.println("\nRESOLVE MAINTENANCE TICKET");
+        System.out.println("-".repeat(50));
+
+        long ticketId = getLongInput("Ticket ID: ");
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            MaintenanceTicket ticket = session.find(MaintenanceTicket.class, ticketId);
+            if (ticket == null) {
+                System.out.println("Ticket not found.");
+                return;
+            }
+
+            if ("RESOLVED".equalsIgnoreCase(ticket.getStatus())) {
+                System.out.println("Ticket is already resolved.");
+                return;
+            }
+
+            Transaction tx = session.beginTransaction();
+            try {
+                ticket.setStatus("RESOLVED");
+                ticket.setResolvedAt(java.time.LocalDateTime.now());
+
+                // Optional: mark equipment back to OK
+                Equipment eq = ticket.getEquipment();
+                if (eq != null) {
+                    eq.setStatus("OK");
+                    session.merge(eq);
+                }
+
+                session.merge(ticket);
+                tx.commit();
+                System.out.println("Ticket resolved.");
+            } catch (Exception e) {
+                tx.rollback();
+                System.out.println("Error resolving ticket: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void listOpenTickets() {
+        System.out.println("\nOPEN MAINTENANCE TICKETS");
+        System.out.println("-".repeat(50));
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<MaintenanceTicket> query = session.createQuery(
+                    "FROM MaintenanceTicket mt WHERE mt.status <> 'RESOLVED' ORDER BY mt.createdAt",
+                    MaintenanceTicket.class
+            );
+            List<MaintenanceTicket> tickets = query.getResultList();
+
+            if (tickets.isEmpty()) {
+                System.out.println("No open tickets.");
+                return;
+            }
+
+            for (MaintenanceTicket mt : tickets) {
+                System.out.println(mt);
+            }
+        }
+    }
+
 
 
     // Helper Function: Validate User's Input

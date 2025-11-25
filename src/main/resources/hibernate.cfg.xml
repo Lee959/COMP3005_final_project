@@ -29,6 +29,13 @@
         <mapping class="org.example.entity.FitnessGoal"/>
         <mapping class="org.example.entity.HealthMetric"/>
         <mapping class="org.example.entity.PersonalTrainingSession"/>
+        <mapping class="org.example.entity.GroupClass"/>
+        <mapping class="org.example.entity.AdminStaff"/>
+        <mapping class="org.example.entity.TrainerAvailability"/>
+        <mapping class="org.example.entity.Equipment"/>
+        <mapping class="org.example.entity.MaintenanceTicket"/>
+        <mapping class="org.example.entity.Invoice"/>
+        <mapping class="org.example.entity.Payment"/>
 
 
     </session-factory>
