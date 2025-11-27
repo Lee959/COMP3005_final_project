@@ -116,6 +116,8 @@ public class FitnessClubCLI {
             System.out.println("1. Set Availability");
             System.out.println("2. View Schedule");
             System.out.println("3. Member Lookup");
+            System.out.println("4. Generate a Trainer (Testing)");
+
             System.out.println("0. Back");
 
             int choice = getIntInput("Choose an option: ");
@@ -130,6 +132,8 @@ public class FitnessClubCLI {
                 case 3:
                     lookupMember();
                     break;
+                case 4:
+                    generateTrainer();
                 case 0:
                     return;
                 default:
@@ -138,12 +142,14 @@ public class FitnessClubCLI {
         }
     }
 
-    //Menu for Admin
+    //Menu for Admin functions
     private static void adminMenu() {
         while (true) {
             System.out.println("\n--- Admin Menu ---");
             System.out.println("1. Equipment Maintenance");
             System.out.println("2. Class Management");
+            System.out.println("3. Generate Admin Staff (testing)");
+            System.out.println("4. Generate Room (testing)");
             System.out.println("0. Back");
 
             int choice = getIntInput("Choose an option: ");
@@ -155,6 +161,10 @@ public class FitnessClubCLI {
                 case 2:
                     manageClasses();
                     break;
+                case 3:
+                    generateAdminStaff();
+                case 4:
+                    generateRoom();
                 case 0:
                     return;
                 default:
@@ -164,7 +174,8 @@ public class FitnessClubCLI {
     }
 
 
-    //1.
+    // ******************* FOLLOWING ARE MEMBER FUNCTIONS IN MEMBER MENU ********************
+    // OPTION 1. Registers member basic information
     private static void registerMember() {
         System.out.println("\nREGISTER NEW MEMBER");
         System.out.println("-".repeat(50));
@@ -200,31 +211,7 @@ public class FitnessClubCLI {
         }
     }
 
-    //7.
-    public static void generateMember() {
-        Transaction transaction = null;
-        Member generated_member = new Member();
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-
-            Query<Long> query = session.createQuery("SELECT COUNT(m) FROM Member m WHERE m.email = :email", Long.class);
-            query.setParameter("email", generated_member.getEmail());
-            Long count = query.getSingleResult();
-            if (count > 0) {
-                System.out.println("Email already exists!");
-                return;
-            }
-            session.persist(generated_member);
-            transaction.commit();
-
-            System.out.println("Member registered successfully! \n" + generated_member);
-        } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
-            System.out.println("Error: " + e.getMessage());
-        }
-    }
-
-    //2.
+    // OPTION 2. Updates member profile
     private static void updateMemberProfile() {
         System.out.println("\nUPDATE MEMBER PROFILE");
         System.out.println("-".repeat(50));
@@ -264,7 +251,7 @@ public class FitnessClubCLI {
         }
     }
 
-    //3.
+    // OPTION 3. Creates fitness goals for member
     private static void addFitnessGoal() {
         System.out.println("\nADD FITNESS GOAL");
         System.out.println("-".repeat(50));
@@ -307,7 +294,7 @@ public class FitnessClubCLI {
         }
     }
 
-    // 4. Log Health Metrics
+    // OPTION 4. Record Health Metrics
     private static void logHealthMetrics() {
         System.out.println("\nLOG HEALTH METRICS");
         System.out.println("-".repeat(50));
@@ -342,7 +329,7 @@ public class FitnessClubCLI {
         }
     }
 
-    // 5. Dashboard
+    // OPTION 5. Show member dashboard with all information
     private static void viewMemberDashboard() {
         System.out.println("\n📈 MEMBER DASHBOARD");
         System.out.println("-".repeat(50));
@@ -444,7 +431,7 @@ public class FitnessClubCLI {
         }
     }
 
-    // 6. Book Training Session
+    // OPTION 6. Book Training Session
     private static void bookTrainingSession() {
         System.out.println("\nBOOK PERSONAL TRAINING SESSION");
         System.out.println("-".repeat(50));
@@ -484,8 +471,9 @@ public class FitnessClubCLI {
         }
     }
 
-    //********************* FOLLOWING TRAINER FUNCTIONS ***********************
-    // 7. Look up trainer member
+
+    //********************* FOLLOWING  ARE TRAINER FUNCTIONS IN TRAINER MENU ***********************
+    // OPTION 1. Look up trainer member
     private static void lookupMember() {
         System.out.println("\nMEMBER LOOKUP (Trainer)");
         System.out.println("-".repeat(50));
@@ -576,7 +564,7 @@ public class FitnessClubCLI {
         }
     }
 
-    //8. See the schedule of the trainer
+    // OPTION 2. Ssee Trainer's schedule
     private static void viewTrainerSchedule() {
         System.out.println("\nTRAINER SCHEDULE VIEW");
         System.out.println("-".repeat(50));
@@ -642,7 +630,7 @@ public class FitnessClubCLI {
         }
     }
 
-    //9. Set the trainer availability
+    // OPTION 3. Set Availability for Trainer
     private static void setTrainerAvailability() {
         System.out.println("\nSET TRAINER AVAILABILITY");
         System.out.println("-".repeat(50));
@@ -719,9 +707,10 @@ public class FitnessClubCLI {
         }
     }
 
-    //********************* FOLLOWING ADMIN FUNCTIONS ******************
 
-    //10. Manage class acts like a menu to perform task such as create, list and update
+    //********************* FOLLOWING ADMIN FUNCTIONS IN ADMIN MENU ******************
+
+    // OPTION 1. Manage and update classes
     private static void manageClasses() {
         while (true) {
             System.out.println("\n--- CLASS MANAGEMENT (Admin) ---");
@@ -742,7 +731,8 @@ public class FitnessClubCLI {
         }
     }
 
-    //******* USED IN MANAGECLASS *************
+    // **** Helper methods for Manage classes ****
+    // Create a Group Class
     private static void createGroupClass() {
         System.out.println("\nCREATE NEW GROUP CLASS");
         System.out.println("-".repeat(50));
@@ -812,6 +802,7 @@ public class FitnessClubCLI {
         }
     }
 
+    // Lists all group class
     private static void listGroupClasses() {
         System.out.println("\nLIST OF GROUP CLASSES");
         System.out.println("-".repeat(50));
@@ -834,6 +825,7 @@ public class FitnessClubCLI {
         }
     }
 
+    // Update the existing classes
     private static void updateGroupClass() {
         System.out.println("\nUPDATE GROUP CLASS");
         System.out.println("-".repeat(50));
@@ -923,7 +915,7 @@ public class FitnessClubCLI {
         }
     }
 
-    // 11. Manages the Equimentment, acts like a menu
+    // OPTION 2. Manages equipments
     private static void manageEquipmentMaintenance() {
         while (true) {
             System.out.println("\n--- EQUIPMENT MAINTENANCE (Admin) ---");
@@ -946,7 +938,7 @@ public class FitnessClubCLI {
         }
     }
 
-    //******* USED IN MANAGE Equiment Mantainance *************
+    //**** Helper methods for manage equipment ***
     private static void addEquipment() {
         System.out.println("\nADD EQUIPMENT");
         System.out.println("-".repeat(50));
@@ -1109,4 +1101,114 @@ public class FitnessClubCLI {
             }
         }
     }
+
+
+    //************** THE FOLLOWING CODE ARE FOR TESTING AND DEMO PURPOSES ****************************
+    // MEMBER MENU - OPTION 7
+    // Generate random members into table to help testing
+    public static void generateMember() {
+        Transaction transaction = null;
+        Member generated_member = new Member();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            Query<Long> query = session.createQuery("SELECT COUNT(m) FROM Member m WHERE m.email = :email", Long.class);
+            query.setParameter("email", generated_member.getEmail());
+            Long count = query.getSingleResult();
+            if (count > 0) {
+                System.out.println("Email already exists!");
+                return;
+            }
+            session.persist(generated_member);
+            transaction.commit();
+
+            System.out.println("Member registered successfully! \n" + generated_member);
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    // TRAINER MENU - OPTION 4
+    // Generate random trainer to help testing
+    public static void generateTrainer() {
+        Transaction transaction = null;
+        Trainer generated_trainer = new Trainer();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            Query<Long> query = session.createQuery("SELECT COUNT(m) FROM Member m WHERE m.email = :email", Long.class);
+            query.setParameter("email", generated_trainer.getEmail());
+            Long count = query.getSingleResult();
+            if (count > 0) {
+                System.out.println("Email already exists!");
+                return;
+            }
+            session.persist(generated_trainer);
+            transaction.commit();
+
+            System.out.println("Member registered successfully! \n" + generated_trainer);
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    // ADMIN MENU - OPTION 3
+    // Generate a admin staff to Test
+    public static void generateAdminStaff() {
+        Transaction transaction = null;
+        AdminStaff generated_admin = new AdminStaff();   // uses your random constructor
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            // Check if email already exists
+            Query<Long> query = session.createQuery(
+                    "SELECT COUNT(a) FROM AdminStaff a WHERE a.email = :email",
+                    Long.class
+            );
+            query.setParameter("email", generated_admin.getEmail());
+
+            if (query.getSingleResult() > 0) {
+                System.out.println("Admin email already exists!");
+                return;
+            }
+
+            session.persist(generated_admin);
+            transaction.commit();
+
+            System.out.println("Admin staff registered successfully!\n" + generated_admin);
+
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    // ADMIN MENU - OPTION 4
+    // Genearte random rooms so we can assign sessions
+    private static void generateRoom() {
+        Transaction transaction = null;
+        Room room = new Room();   // uses the testing constructor (random name + capacity)
+
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            session.persist(room);
+            transaction.commit();
+
+            System.out.println("\n✅ Room created successfully:");
+            System.out.println("   ID:   " + room.getRoomId());
+            System.out.println("   Name: " + room.getRoomName());
+            System.out.println("   Cap:  " + room.getCapacity());
+
+        } catch (Exception e) {
+            if (transaction != null) transaction.rollback();
+            System.out.println("Error creating room: " + e.getMessage());
+        }
+    }
+
+
+
 }

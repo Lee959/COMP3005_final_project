@@ -1,5 +1,7 @@
 package org.example.entity;
 import jakarta.persistence.*;
+import java.util.Random;
+
 
 @Entity
 @Table(name = "admin_staff")
@@ -18,8 +20,13 @@ public class AdminStaff {
     @Column(length = 50)
     private String role;   // e.g., "Manager", "Front Desk"
 
+    // For testing purpose
     public AdminStaff() {
+        this.name = generateRandomName();
+        this.email = generateEmail();
+        this.role = generateRandomRole();
     }
+
 
     public AdminStaff(String name, String email, String role) {
         this.name = name;
@@ -64,4 +71,36 @@ public class AdminStaff {
                 ", role='" + role + '\'' +
                 '}';
     }
+
+
+    // Helper Function for Testing
+    private static final String[] FIRST_NAMES = {
+            "Sophia", "Liam", "Olivia", "Noah", "Emma", "Lucas", "Ava", "Mason"
+    };
+
+    private static final String[] LAST_NAMES = {
+            "Clark", "Baker", "Wright", "Hill", "Adams", "Bennett"
+    };
+
+    private static final String[] ROLES = {
+            "Manager", "Front Desk", "Billing", "Support"
+    };
+
+    // -------------------- Helper Methods --------------------
+    private String generateRandomName() {
+        Random random = new Random();
+        String first = FIRST_NAMES[random.nextInt(FIRST_NAMES.length)];
+        String last = LAST_NAMES[random.nextInt(LAST_NAMES.length)];
+        return first + " " + last;
+    }
+
+    private String generateEmail() {
+        return name.replace(" ", "_").toLowerCase() + "@admin.com";
+    }
+
+    private String generateRandomRole() {
+        Random random = new Random();
+        return ROLES[random.nextInt(ROLES.length)];
+    }
+
 }

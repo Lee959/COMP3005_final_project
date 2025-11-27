@@ -79,4 +79,17 @@ public class MaintenanceTicket {
     public void setResolvedAt(LocalDateTime resolvedAt) {
         this.resolvedAt = resolvedAt;
     }
+
+    @Override
+    public String toString() {
+        return "MaintenanceTicket{" +
+                "ticketId=" + ticketId +
+                ", status='" + status + '\'' +
+                ", description='" + description + '\'' +
+                ", createdAt=" + createdAt +
+                ", resolvedAt=" + resolvedAt +
+                ", equipment=" + (equipment != null ? equipment.getName() : "null") +
+                '}';
+    }
+
 }

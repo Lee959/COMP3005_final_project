@@ -34,9 +34,6 @@
         <mapping class="org.example.entity.TrainerAvailability"/>
         <mapping class="org.example.entity.Equipment"/>
         <mapping class="org.example.entity.MaintenanceTicket"/>
-        <mapping class="org.example.entity.Invoice"/>
-        <mapping class="org.example.entity.Payment"/>
-
 
     </session-factory>
 </hibernate-configuration>
