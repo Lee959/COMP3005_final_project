@@ -1,4 +1,4 @@
-package org.example.entity;
+package org.example.model;
 
 
 import jakarta.persistence.*;
@@ -42,26 +42,40 @@ public class PersonalTrainingSession {
     private String status; // Scheduled, Completed, Cancelled
 
     // Constructors
-    public PersonalTrainingSession() {
+    private void init() {
         this.status = "Scheduled";
     }
 
-//    public PersonalTrainingSession(Member member, Trainer trainer, Room room) {
-//        this();
-//        this.member = member;
-//        this.trainer = trainer;
-//        this.room = room;
-//    }
 
     // Constructor For Testing
-    public PersonalTrainingSession(Member member, Trainer trainer, Room room) {
-        this();
-        this.member = member;
-        this.trainer = trainer;
-        this.room = room;
+    public PersonalTrainingSession() {
+        init();
+        this.member = generateMember();
+        this.trainer = generateTrainer();
+        this.room = generateRoom();
         this.sessionDate = generateRandomSessionDate();
         this.startTime = generateRandomStartTime();
         this.endTime = generateRandomEndTime(startTime);
+    }
+
+    public PersonalTrainingSession(Member member, Trainer trainer, Room room) {
+        init();
+        this.sessionDate = generateRandomSessionDate();
+        this.startTime = generateRandomStartTime();
+        this.endTime = generateRandomEndTime(startTime);
+    }
+
+
+    public PersonalTrainingSession(Long sessionId, Member member, Trainer trainer, Room room, LocalDate sessionDate, LocalTime startTime, LocalTime endTime, String status) {
+        init();
+        this.sessionId = sessionId;
+        this.member = member;
+        this.trainer = trainer;
+        this.room = room;
+        this.sessionDate = sessionDate;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.status = status;
     }
 
     private  LocalDate generateRandomSessionDate() {
@@ -179,4 +193,21 @@ public class PersonalTrainingSession {
                 ", status='" + status + '\'' +
                 '}';
     }
+
+    private Member generateMember() {
+        Member generated_member = new Member();
+        return generated_member;
+    }
+
+    private Trainer generateTrainer() {
+        Trainer generated_trainer = new Trainer();
+        return generated_trainer;
+    }
+
+    private Room generateRoom() {
+        Room generated_room = new Room();
+        return generated_room;
+    }
+
+
 }

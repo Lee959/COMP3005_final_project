@@ -1,4 +1,4 @@
-package org.example.entity;
+package org.example.model;
 
 
 import jakarta.persistence.*;
@@ -40,6 +40,9 @@ public class HealthMetric {
         this();
         this.member = member;
     }
+
+
+
 
     // Getter and Setter
 

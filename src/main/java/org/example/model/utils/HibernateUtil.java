@@ -1,12 +1,9 @@
-package org.example.utils;
+package org.example.model.utils;
 
 import java.util.Properties;
-import org.example.entity.*;
-import org.hibernate.Session;
+import org.example.model.*;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.MappingSettings;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 

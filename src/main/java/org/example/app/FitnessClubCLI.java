@@ -1,7 +1,7 @@
-package org.example;
+package org.example.app;
 
-import org.example.entity.*;
-import org.example.utils.*;
+import org.example.model.*;
+import org.example.model.utils.*;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
@@ -15,8 +15,6 @@ import java.util.Scanner;
 
 public class FitnessClubCLI {
     private static Scanner scanner = new Scanner(System.in);
-    private static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
     public static void main(String[] args) {
         System.out.println("   Health & Fitness Club Management System     ");
@@ -73,7 +71,7 @@ public class FitnessClubCLI {
             System.out.println("4. Log Health Metrics");
             System.out.println("5. View Dashboard");
             System.out.println("6. Book Personal Training Session");
-            System.out.println("7. Generate a Member (For Testing)");
+            System.out.println("7. Generate a Member (For Testing)"); // Testing
             System.out.println("0. Back to Main Menu");
             System.out.println("=".repeat(50));
 
@@ -98,8 +96,8 @@ public class FitnessClubCLI {
                 case 6:
                     bookTrainingSession();
                     break;
-                case 7: //For Testing
-                    generateMember();
+                case 7:
+                    generateMember(); //For Testing
                 case 0:
                     back = true;
                     break;
@@ -222,7 +220,7 @@ public class FitnessClubCLI {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
 
-            Member member = session.find(Member.class, memberId);
+            Member member = session.find(Member.class, memberId); // find the Member
             if (member == null) {
                 System.out.println("Member not found!");
                 return;
@@ -242,9 +240,9 @@ public class FitnessClubCLI {
 
 
             session.merge(member);
-            transaction.commit();
+            transaction.commit(); //save change
 
-            System.out.println("✅ Profile updated successfully!");
+            System.out.println("Profile updated successfully!");
         } catch (Exception e) {
             if (transaction != null) transaction.rollback();
             System.out.println("Error: " + e.getMessage());
@@ -259,7 +257,6 @@ public class FitnessClubCLI {
         Long memberId = getLongInput("Enter Member ID: ");
         String goalType = getStringInput("Goal Type (e.g., Weight Loss, Muscle Gain): ");
         BigDecimal targetValue = getBigDecimalInput("Target Value (e.g., 75.5 kg): ");
-//        String targetDate = getStringInput("Target Date (yyyy-MM-dd): ");
 
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -271,12 +268,6 @@ public class FitnessClubCLI {
                 return;
             }
 
-//            FitnessGoal goal = new FitnessGoal(
-//                    member,
-//                    goalType,
-//                    targetValue,
-//                    LocalDate.parse(targetDate, dateFormatter)
-//            );
 
             FitnessGoal goal_generateDate = new FitnessGoal(
                     member,
@@ -331,7 +322,7 @@ public class FitnessClubCLI {
 
     // OPTION 5. Show member dashboard with all information
     private static void viewMemberDashboard() {
-        System.out.println("\n📈 MEMBER DASHBOARD");
+        System.out.println("\n MEMBER DASHBOARD");
         System.out.println("-".repeat(50));
 
         Long memberId = getLongInput("Enter Member ID: ");
@@ -417,7 +408,7 @@ public class FitnessClubCLI {
                             " at " + trainingSession.getStartTime()
                             + " - Trainer: " + trainingSession.getTrainer().getFirstName() + " " +
                             trainingSession.getTrainer().getLastName()
-//                          + " (Room: " + trainingSession.getRoom().getRoomName() + ")"
+                          + " (Room: " + trainingSession.getRoom().getRoomName() + ")"
                     );
                 }
             } else {
@@ -439,12 +430,11 @@ public class FitnessClubCLI {
         Long memberId = getLongInput("Enter Member ID: ");
         Long trainerId = getLongInput("Enter Trainer ID: ");
         Long roomId = getLongInput("Enter Room ID: ");
-//        String sessionDate = getStringInput("Session Date (yyyy-MM-dd): ");
-//        String startTime = getStringInput("Start Time (HH:mm): ");
-//        String endTime = getStringInput("End Time (HH:mm): ");
 
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        Session session = null;
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
             transaction = session.beginTransaction();
 
             Member member = session.find(Member.class, memberId);
@@ -453,21 +443,33 @@ public class FitnessClubCLI {
 
             if (member == null || trainer == null || room == null) {
                 System.out.println("Invalid Member, Trainer, or Room ID!");
+                if (transaction != null) {
+                    transaction.rollback();
+                }
                 return;
             }
 
-            PersonalTrainingSession pts = new PersonalTrainingSession(member, trainer, room);
-//            pts.setSessionDate(LocalDate.parse(sessionDate, dateFormatter));
-//            pts.setStartTime(LocalTime.parse(startTime, timeFormatter));
-//            pts.setEndTime(LocalTime.parse(endTime, timeFormatter));
+            PersonalTrainingSession pts = new PersonalTrainingSession();
+            pts.setMember(member);
+            pts.setTrainer(trainer);
+            pts.setRoom(room);
+            // Set any other required fields (e.g., session date/time if needed)
 
             session.persist(pts);
             transaction.commit();
 
             System.out.println("Training session booked successfully! Session ID: " + pts.getSessionId());
+            System.out.println("Success!");
         } catch (Exception e) {
-            if (transaction != null) transaction.rollback();
+            if (transaction != null) {
+                transaction.rollback();
+            }
             System.out.println("Error: " + e.getMessage());
+            e.printStackTrace(); // Helpful for debugging
+        } finally {
+            if (session != null) {
+                session.close();
+            }
         }
     }
 
@@ -1198,7 +1200,7 @@ public class FitnessClubCLI {
             session.persist(room);
             transaction.commit();
 
-            System.out.println("\n✅ Room created successfully:");
+            System.out.println("\nRoom created successfully:");
             System.out.println("   ID:   " + room.getRoomId());
             System.out.println("   Name: " + room.getRoomName());
             System.out.println("   Cap:  " + room.getCapacity());
@@ -1208,7 +1210,4 @@ public class FitnessClubCLI {
             System.out.println("Error creating room: " + e.getMessage());
         }
     }
-
-
-
 }

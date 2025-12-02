@@ -1,4 +1,4 @@
-package org.example.entity;
+package org.example.model;
 
 import jakarta.persistence.*;
 
@@ -146,15 +146,11 @@ public class Member {
     public String toString() {
         return "Member{" +
                 "member_id=" + member_id +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
                 ", first_name='" + first_name + '\'' +
                 ", last_name='" + last_name + '\'' +
+                ", email='" + email + '\'' +
                 ", gender='" + gender + '\'' +
                 ", registeration_date=" + registeration_date +
-                ", fitnessGoals=" + fitnessGoals +
-                ", healthMetrics=" + healthMetrics +
-                ", trainingSessions=" + trainingSessions +
                 '}';
     }
 }

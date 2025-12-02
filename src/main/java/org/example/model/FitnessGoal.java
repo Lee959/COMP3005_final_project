@@ -1,4 +1,4 @@
-package org.example.entity;
+package org.example.model;
 
 
 import jakarta.persistence.*;
@@ -116,12 +116,12 @@ public class FitnessGoal {
     @Override
     public String toString() {
         return "FitnessGoal{" +
-                "goalId=" + goalId +
-                ", member=" + member +
+                "goal_id=" + goalId +
                 ", goal_type='" + goal_type + '\'' +
-                ", targetValue=" + targetValue +
-                ", targetDate=" + targetDate +
-                ", createdDate=" + createdDate +
+                ", target_value=" + targetValue +
+                ", target_date=" + targetDate +
+                ", created_date=" + createdDate +
+                ", member_id=" + (member != null ? member.getMember_id() : "null") +
                 '}';
     }
 }

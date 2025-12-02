@@ -23,17 +23,17 @@
         <property name="hibernate.jdbc.lob.non_contextual_creation">true</property>
 
         <!-- Entity Mappings -->
-        <mapping class="org.example.entity.Room"/>
-        <mapping class="org.example.entity.Member"/>
-        <mapping class="org.example.entity.Trainer"/>
-        <mapping class="org.example.entity.FitnessGoal"/>
-        <mapping class="org.example.entity.HealthMetric"/>
-        <mapping class="org.example.entity.PersonalTrainingSession"/>
-        <mapping class="org.example.entity.GroupClass"/>
-        <mapping class="org.example.entity.AdminStaff"/>
-        <mapping class="org.example.entity.TrainerAvailability"/>
-        <mapping class="org.example.entity.Equipment"/>
-        <mapping class="org.example.entity.MaintenanceTicket"/>
+        <mapping class="org.example.model.Room"/>
+        <mapping class="org.example.model.Member"/>
+        <mapping class="org.example.model.Trainer"/>
+        <mapping class="org.example.model.FitnessGoal"/>
+        <mapping class="org.example.model.HealthMetric"/>
+        <mapping class="org.example.model.PersonalTrainingSession"/>
+        <mapping class="org.example.model.GroupClass"/>
+        <mapping class="org.example.model.AdminStaff"/>
+        <mapping class="org.example.model.TrainerAvailability"/>
+        <mapping class="org.example.model.Equipment"/>
+        <mapping class="org.example.model.MaintenanceTicket"/>
 
     </session-factory>
 </hibernate-configuration>
